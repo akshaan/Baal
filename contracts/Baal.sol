@@ -75,10 +75,7 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
     string public override versionRecipient = "2.2.3+opengsn.molochV3.irelayrecipient";
 
     // SIGNATURE HELPERS
-    bytes32 constant VOTE_TYPEHASH =
-        keccak256(
-            "Vote(string name,address voter,uint32 proposalId,bool support)"
-        );
+    bytes32 constant VOTE_TYPEHASH = keccak256("Vote(string name,address voter,uint32 proposalId,bool support)");
 
     // DATA STRUCTURES
     struct Proposal {
@@ -130,12 +127,9 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
         _;
     }
 
-    modifier baalOrAdminOnly() {
-        require(
-            _msgSender() == avatar || isAdmin(_msgSender()),
-            "!baal & !admin"
-        ); /*check `shaman` is admin*/
-        _;
+    modifier baalOrAdminOnly() { 
+        /*check `shaman` is admin*/ _;
+        require( _msgSender() == avatar || isAdmin(_msgSender()), "!baal & !admin" );
     }
 
     modifier baalOrManagerOnly() {
@@ -258,28 +252,6 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
             _initializationParams,
             (BaalInitializeParams)
         );
-        // (
-        //     string memory _name, /*_name Name for erc20 `shares` accounting*/
-        //     string memory _symbol, /*_symbol Symbol for erc20 `shares` accounting*/
-        //     address _lootSingleton, /*template contract to clone for loot ERC20 token*/
-        //     address _sharesSingleton, /*template contract to clone for loot ERC20 token*/
-        //     address _multisendLibrary, /*address of multisend library*/
-        //     address _avatar, /*Safe contract address*/
-        //     address _forwarder, /*address of trusted forwarder for meta-transactions (EIP-2771)*/
-        //     bytes memory _initializationMultisendData /*here you call BaalOnly functions to set up initial shares, loot, shamans, periods, etc.*/
-        // ) = abi.decode(
-        //         _initializationParams,
-        //         (
-        //             string,
-        //             string,
-        //             address,
-        //             address,
-        //             address,
-        //             address,
-        //             address,
-        //             bytes
-        //         )
-        //     );
 
         __Ownable_init();
         transferOwnership(_baalParams.avatar);
