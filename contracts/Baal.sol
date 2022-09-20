@@ -28,7 +28,6 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
     using ECDSA for bytes32;
 
     // ERC20 SHARES + LOOT
-
     IBaalToken public lootToken; /*Sub ERC20 for loot mgmt*/
     IBaalToken public sharesToken; /*Sub ERC20 for loot mgmt*/
 
@@ -72,6 +71,9 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
     uint32 public latestSponsoredProposalId; /* the id of the last proposal to be sponsored */
     address public multisendLibrary; /*address of multisend library*/
 
+    // GSN versionRecipient
+    string public override versionRecipient = "2.2.3+opengsn.molochV3.irelayrecipient";
+
     // SIGNATURE HELPERS
     bytes32 constant VOTE_TYPEHASH = keccak256("Vote(string name,address voter,uint32 proposalId,bool support)");
 
@@ -94,6 +96,17 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
         string details; /*human-readable context for proposal*/
     }
 
+    struct BaalInitializeParams {
+        string name; /*_name Name for erc20 `shares` accounting*/
+        string symbol; /*_symbol Symbol for erc20 `shares` accounting*/
+        address lootSingleton; /*template contract to clone for loot ERC20 token*/
+        address sharesSingleton; /*template contract to clone for loot ERC20 token*/
+        address multisendLibrary; /*address of multisend library*/
+        address avatar; /*Safe contract address*/
+        address forwarder; /*address of trusted forwarder for meta-transactions (EIP-2771)*/
+        bytes initializationMultisendData; /*here you call BaalOnly functions to set up initial shares, loot, shamans, periods, etc.*/
+    }
+
     /* Unborn -> Submitted -> Voting -> Grace -> Ready -> Processed
                               \-> Cancelled  \-> Defeated   */
     enum ProposalState {
@@ -114,9 +127,9 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
         _;
     }
 
-    modifier baalOrAdminOnly() {
-        require(_msgSender() == avatar || isAdmin(_msgSender()), "!baal & !admin"); /*check `shaman` is admin*/
-        _;
+    modifier baalOrAdminOnly() { 
+        /*check `shaman` is admin*/ _;
+        require( _msgSender() == avatar || isAdmin(_msgSender()), "!baal & !admin" );
     }
 
     modifier baalOrManagerOnly() {
@@ -235,52 +248,53 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
         initializer
         nonReentrant
     {
-        (
-            string memory _name, /*_name Name for erc20 `shares` accounting*/
-            string memory _symbol, /*_symbol Symbol for erc20 `shares` accounting*/
-            address _lootSingleton, /*template contract to clone for loot ERC20 token*/
-            address _sharesSingleton, /*template contract to clone for loot ERC20 token*/
-            address _multisendLibrary, /*address of multisend library*/
-            address _avatar, /*Safe contract address*/
-            address _forwarder, /*address of trusted forwarder for meta-transactions (EIP-2771)*/
-            bytes memory _initializationMultisendData /*here you call BaalOnly functions to set up initial shares, loot, shamans, periods, etc.*/
-        ) = abi.decode(
-                _initializationParams,
-                (string, string, address, address, address, address, address, bytes)
-            );
+        BaalInitializeParams memory _baalParams = abi.decode(
+            _initializationParams,
+            (BaalInitializeParams)
+        );
 
         __Ownable_init();
-        transferOwnership(_avatar);
+        transferOwnership(_baalParams.avatar);
 
         // Set the Gnosis safe address
-        avatar = _avatar;
-        target = _avatar; /*Set target to same address as avatar on setup - can be changed later via setTarget, though probably not a good idea*/
+        avatar = _baalParams.avatar;
+        target = _baalParams.avatar; /*Set target to same address as avatar on setup - can be changed later via setTarget, though probably not a good idea*/
 
         // Set trusted forwarder
-        _setTrustedForwarder(_forwarder);
+        _setTrustedForwarder(_baalParams.forwarder);
 
-        require(_lootSingleton != address(0), "!lootSingleton");
+        require(_baalParams.lootSingleton != address(0), "!lootSingleton");
 
-        lootToken = IBaalToken(address(new ERC1967Proxy(
-            _lootSingleton,
-            abi.encodeWithSelector(
-                IBaalToken(_lootSingleton).setUp.selector, 
-                string(abi.encodePacked(_name, " LOOT")), 
-                string(abi.encodePacked(_symbol, "-LOOT")))
-        )));
+        lootToken = IBaalToken(
+            address(
+                new ERC1967Proxy(
+                    _baalParams.lootSingleton,
+                    abi.encodeWithSelector(
+                        IBaalToken(_baalParams.lootSingleton).setUp.selector,
+                        string(abi.encodePacked(_baalParams.name, " LOOT")),
+                        string(abi.encodePacked(_baalParams.symbol, "-LOOT"))
+                    )
+                )
+            )
+        );
 
-        require(_sharesSingleton != address(0), "!sharesSingleton");
+        require(_baalParams.sharesSingleton != address(0), "!sharesSingleton");
 
-        sharesToken = IBaalToken(address(new ERC1967Proxy(
-            _sharesSingleton,
-            abi.encodeWithSelector(
-                IBaalToken(_sharesSingleton).setUp.selector, 
-                _name, 
-                _symbol)
-        )));
+        sharesToken = IBaalToken(
+            address(
+                new ERC1967Proxy(
+                    _baalParams.sharesSingleton,
+                    abi.encodeWithSelector(
+                        IBaalToken(_baalParams.sharesSingleton).setUp.selector,
+                        _baalParams.name,
+                        _baalParams.symbol
+                    )
+                )
+            )
+        );
 
         /*Set address of Gnosis multisend library to use for all execution*/
-        multisendLibrary = _multisendLibrary;
+        multisendLibrary = _baalParams.multisendLibrary;
 
         // Execute all setups including but not limited to
         // * mint shares
@@ -291,7 +305,7 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
             exec(
                 multisendLibrary,
                 0,
-                _initializationMultisendData,
+                _baalParams.initializationMultisendData,
                 Enum.Operation.DelegateCall
             ),
             "call failure"
@@ -306,12 +320,11 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
             quorumPercent,
             sponsorThreshold,
             minRetentionPercent,
-            _name,
-            _symbol,
+            _baalParams.name,
+            _baalParams.symbol,
             totalShares(),
             totalLoot()
         );
-
     }
 
     /*****************
@@ -390,7 +403,10 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
     function sponsorProposal(uint32 id) external nonReentrant {
         Proposal storage prop = proposals[id]; /*alias proposal storage pointers*/
 
-        require(sharesToken.getCurrentVotes(_msgSender()) >= sponsorThreshold, "!sponsor"); /*check 'votes > threshold - required to sponsor proposal*/
+        require(
+            sharesToken.getCurrentVotes(_msgSender()) >= sponsorThreshold,
+            "!sponsor"
+        ); /*check 'votes > threshold - required to sponsor proposal*/
         require(state(id) == ProposalState.Submitted, "!submitted");
         require(
             prop.expiration == 0 ||
@@ -836,7 +852,7 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
             uint256 newOffering,
             uint256 quorum,
             uint256 sponsor,
-            uint256 minRetention,
+            uint256 minRetention
         ) = abi.decode(
                 _governanceConfig,
                 (uint32, uint32, uint256, uint256, uint256, uint256)
@@ -858,11 +874,11 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
     }
 
     /// @notice Baal-or-governance only function to set trusted forwarder for meta-transactions.
-    /// @param address Trusted forwarder's address
-    function setTrustedForwarder(address calldata _trustedForwarderAddress)
+    /// @param _forwarder Trusted forwarder's address
+    function setTrustedForwarder(address _forwarder)
         external
         baalOrGovernorOnly
-    { 
+    {
         _setTrustedForwarder(_forwarder);
     }
 
@@ -1009,13 +1025,21 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
         ); /*checks success & allows non-conforming transfers*/
     }
 
-    function _msgSender() internal view override(ContextUpgradeable, BaseRelayRecipient)
-        returns (address sender) {
+    function _msgSender()
+        internal
+        view
+        override(ContextUpgradeable, BaseRelayRecipient)
+        returns (address sender)
+    {
         sender = BaseRelayRecipient._msgSender();
     }
 
-    function _msgData() internal view override(ContextUpgradeable, BaseRelayRecipient)
-        returns (bytes calldata) {
+    function _msgData()
+        internal
+        view
+        override(ContextUpgradeable, BaseRelayRecipient)
+        returns (bytes calldata)
+    {
         return BaseRelayRecipient._msgData();
     }
 }

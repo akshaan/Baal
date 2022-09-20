@@ -215,10 +215,11 @@ const getBaalParams = async function (
   // )
   return {
     initParams: abiCoder.encode(
-      ["string", "string"],
+      ["string", "string", "address"],
       [
         config.TOKEN_NAME,
         config.TOKEN_SYMBOL,
+        "0x0"
       ]
     ),
     initalizationActions,
@@ -642,11 +643,11 @@ describe("Baal contract", function () {
     it("can eject and upgrade token with eoa", async function () {
       // upgrade token contracts to remove baal deps
       // call from safe
-      // remove baal module 
+      // remove baal module
 
       // owner should be baal
       expect(await sharesToken.owner()).to.equal(baal.address);
-      
+
       const transferOwnershipAction = await sharesToken.interface.encodeFunctionData(
         "transferOwnership",
         [summoner.address]
@@ -663,7 +664,7 @@ describe("Baal contract", function () {
         .withArgs(1, true, false);
 
       expect(await sharesToken.owner()).to.equal(summoner.address);
-  
+
       let BaalLessSharesFactory: ContractFactory;
 
       BaalLessSharesFactory = await ethers.getContractFactory("BaalLessShares");
@@ -672,9 +673,9 @@ describe("Baal contract", function () {
       const sharesTokenAsOwnerEoa = await sharesToken.connect(summoner);
       expect(await baalLessSharesSingleton.version()).to.equal(0);
       console.log('upgrade');
-      
+
       await sharesTokenAsOwnerEoa.upgradeToAndCall(
-        baalLessSharesSingleton.address, 
+        baalLessSharesSingleton.address,
         baalLessSharesSingleton.interface.encodeFunctionData("setUp", [
           2
       ]))
@@ -690,7 +691,7 @@ describe("Baal contract", function () {
 
       expect(await sharesToken.balanceOf(summoner.address)).to.equal(200);
 
-      
+
     });
   });
   describe("shaman actions - permission level 7 (full)", function () {
@@ -3721,11 +3722,12 @@ const getBaalParamsWithAvatar = async function (
   // )
   return {
     initParams: abiCoder.encode(
-      ["string", "string", "address"],
+      ["string", "string", "address", "address"],
       [
         config.TOKEN_NAME,
         config.TOKEN_SYMBOL,
         safeAddr,
+        "0x0"
       ]
     ),
     initalizationActions,
