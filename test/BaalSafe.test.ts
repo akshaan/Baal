@@ -392,7 +392,7 @@ describe("Baal contract", function () {
     poster = (await Poster.deploy()) as Poster;
     const network = await ethers.provider.getNetwork();
     chainId = network.chainId;
-    forwarder = "0x0000000000000000000000000000000000002211";
+    forwarder = "0x0000000000000000000000000000000000000420";
   });
 
   beforeEach(async function () {

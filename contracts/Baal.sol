@@ -1005,11 +1005,13 @@ contract Baal is Module, EIP712, ReentrancyGuard, BaseRelayRecipient {
         ); /*checks success & allows non-conforming transfers*/
     }
 
+    /// @notice Provides access to message sender of a meta transaction (EIP-2771)
     function _msgSender() internal view override(ContextUpgradeable, BaseRelayRecipient)
         returns (address sender) {
         sender = BaseRelayRecipient._msgSender();
     }
 
+    /// @notice Provides access to message data of a meta transaction (EIP-2771)
     function _msgData() internal view override(ContextUpgradeable, BaseRelayRecipient)
         returns (bytes calldata) {
         return BaseRelayRecipient._msgData();
