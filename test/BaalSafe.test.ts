@@ -33,6 +33,7 @@ import signDelegation from "../src/signDelegation";
 import signPermit from "../src/signPermit";
 import { string } from "hardhat/internal/core/params/argumentTypes";
 import { calculateProxyAddress } from "@gnosis.pm/zodiac";
+import { Address } from "cluster";
 
 use(solidity);
 
@@ -156,6 +157,7 @@ const getBaalParams = async function (
   shamans: [string[], number[]],
   shares: [string[], number[]],
   loots: [string[], number[]],
+  trustedForwarder: string, 
 ) {
   const governanceConfig = abiCoder.encode(
     ["uint32", "uint32", "uint256", "uint256", "uint256", "uint256"],
@@ -195,6 +197,9 @@ const getBaalParams = async function (
   const posterFromBaal = await baal.interface.encodeFunctionData(
     "executeAsBaal",
     [poster.address, 0, postMetaData]
+  ); 
+  const setTrustedForwarder = await baal.interface.encodeFunctionData(
+    "setTrustedForwarder", [trustedForwarder]
   );
 
   const initalizationActions = [
@@ -204,6 +209,7 @@ const getBaalParams = async function (
     mintLoot,
     mintShares,
     posterFromBaal,
+    setTrustedForwarder,
   ];
 
   // const initalizationActionsMulti = encodeMultiAction(
@@ -439,7 +445,8 @@ describe("Baal contract", function () {
       [sharesPaused, lootPaused],
       [[shaman.address], [7]],
       [[summoner.address], [shares]],
-      [[summoner.address], [loot]]
+      [[summoner.address], [loot]],
+      zeroAddress,
     );
 
     const tx = await baalSummoner.summonBaalAndSafe(
@@ -3533,7 +3540,8 @@ describe("Baal contract - offering required", function () {
       [sharesPaused, lootPaused],
       [[shaman.address], [7]],
       [[summoner.address], [shares]],
-      [[summoner.address], [loot]]
+      [[summoner.address], [loot]],
+      zeroAddress,
     );
 
     const tx = await baalSummoner.summonBaalAndSafe(
@@ -3661,6 +3669,7 @@ const getBaalParamsWithAvatar = async function (
   shamans: [string[], number[]],
   shares: [string[], number[]],
   loots: [string[], number[]],
+  trustedForwarder: string,
   safeAddr?: string,
 ) {
   const governanceConfig = abiCoder.encode(
@@ -3702,6 +3711,9 @@ const getBaalParamsWithAvatar = async function (
     "executeAsBaal",
     [poster.address, 0, postMetaData]
   );
+  const setTrustedForwarder = await baal.interface.encodeFunctionData(
+    "setTrustedForwarder", [trustedForwarder]
+  );
 
   const initalizationActions = [
     setAdminConfig,
@@ -3710,6 +3722,7 @@ const getBaalParamsWithAvatar = async function (
     mintLoot,
     mintShares,
     posterFromBaal,
+    setTrustedForwarder,
   ];
 
   // const initalizationActionsMulti = encodeMultiAction(
@@ -3848,7 +3861,8 @@ describe("Baal contract - summon baal with current safe", function () {
           [[shaman.address], [7]],
           [[summoner.address], [shares]],
           [[summoner.address], [loot]],
-          avatar.address
+          zeroAddress,
+          avatar.address,
         );
 
         // view function used as placeholder in deployment
