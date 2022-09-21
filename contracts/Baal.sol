@@ -15,10 +15,11 @@ import "@gnosis.pm/zodiac/contracts/core/Module.sol";
 import "@gnosis.pm/safe-contracts/contracts/common/Enum.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
-import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./interfaces/IBaalToken.sol";
+
+import "hardhat/console.sol";
 
 /// @title Baal ';_;'.
 /// @notice Flexible guild contract inspired by Moloch DAO framework.
@@ -236,8 +237,8 @@ contract Baal is Module, EIP712, ReentrancyGuard {
         (
             string memory _name, /*_name Name for erc20 `shares` accounting*/
             string memory _symbol, /*_symbol Symbol for erc20 `shares` accounting*/
-            address _lootSingleton, /*template contract to clone for loot ERC20 token*/
-            address _sharesSingleton, /*template contract to clone for loot ERC20 token*/
+            address _lootToken, /*loot ERC20 token*/
+            address _sharesToken, /*shares ERC20 token*/
             address _multisendLibrary, /*address of multisend library*/
             address _avatar, /*Safe contract address*/
             bytes memory _initializationMultisendData /*here you call BaalOnly functions to set up initial shares, loot, shamans, periods, etc.*/
@@ -253,25 +254,8 @@ contract Baal is Module, EIP712, ReentrancyGuard {
         avatar = _avatar;
         target = _avatar; /*Set target to same address as avatar on setup - can be changed later via setTarget, though probably not a good idea*/
 
-        require(_lootSingleton != address(0), "!lootSingleton");
-
-        lootToken = IBaalToken(address(new ERC1967Proxy(
-            _lootSingleton,
-            abi.encodeWithSelector(
-                IBaalToken(_lootSingleton).setUp.selector, 
-                string(abi.encodePacked(_name, " LOOT")), 
-                string(abi.encodePacked(_symbol, "-LOOT")))
-        )));
-
-        require(_sharesSingleton != address(0), "!sharesSingleton");
-
-        sharesToken = IBaalToken(address(new ERC1967Proxy(
-            _sharesSingleton,
-            abi.encodeWithSelector(
-                IBaalToken(_sharesSingleton).setUp.selector, 
-                _name, 
-                _symbol)
-        )));
+        lootToken = IBaalToken(_lootToken);
+        sharesToken = IBaalToken(_sharesToken);
 
         /*Set address of Gnosis multisend library to use for all execution*/
         multisendLibrary = _multisendLibrary;
@@ -732,8 +716,26 @@ contract Baal is Module, EIP712, ReentrancyGuard {
         external
         baalOrAdminOnly
     {
+
         sharesPaused = pauseShares; /*set pause `shares`*/
         lootPaused = pauseLoot; /*set pause `loot`*/
+
+        // TODO: only call these if needed
+        if(pauseShares && !sharesToken.paused()){
+            sharesToken.pause();
+        } 
+        if(!pauseShares && sharesToken.paused()){
+            sharesToken.unpause();
+        }
+        if(pauseLoot && !lootToken.paused()){
+            console.log("pause loot");
+            lootToken.pause();
+        } 
+        if(!pauseLoot && lootToken.paused()){
+            console.log("unpause loot");
+            lootToken.unpause();
+        }
+
         emit SharesPaused(pauseShares);
         emit LootPaused(pauseLoot);
     }

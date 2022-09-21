@@ -10,6 +10,16 @@ interface IBaalToken {
 
     function burn(address account, uint256 amount) external;
 
+    function pause() external;
+
+    function unpause() external;
+
+    function paused() external view returns (bool);
+    
+    function transferOwnership(address newOwner) external;
+
+    function owner() external view returns (address);
+
     function balanceOf(address account) external view returns (uint256);
 
     function totalSupply() external view returns (uint256);

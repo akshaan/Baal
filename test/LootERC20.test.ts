@@ -73,8 +73,10 @@ describe('Loot ERC20 contract', async function () {
   })
 
   describe('constructor', async function () {
-    it('creates an unusable template', async function () {
-      expect(await lootSingleton.baal()).to.equal(zeroAddress)
+    it.only('creates an unusable template', async function () {
+      const owner = await lootSingleton.owner();
+      console.log("owner from tests", owner);
+      expect(await lootSingleton.owner()).to.equal(zeroAddress)
     })
 
     it('require fail - initializer (setup) cant be called twice on loot', async function () {

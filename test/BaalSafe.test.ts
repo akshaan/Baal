@@ -60,10 +60,10 @@ const revertMessages = {
   processProposalNotReady: "!ready",
   ragequitUnordered: "!order",
   // unsetGuildTokensLastToken: 'reverted with panic code 0x32 (Array accessed at an out-of-bounds or negative index)',
-  sharesTransferPaused: "!transferable",
+  sharesTransferPaused: "Pausable: paused",
   sharesInsufficientBalance: "ERC20: transfer amount exceeds balance",
   sharesInsufficientApproval: "", // Error: Transaction reverted without a reason string
-  lootTransferPaused: "!transferable",
+  lootTransferPaused: "Pausable: paused",
   lootInsufficientBalance:
     "reverted with reason string 'ERC20: transfer amount exceeds balance'",
   // lootInsufficientApproval: 'reverted with panic code 0x11 (Arithmetic operation underflowed or overflowed outside of an unchecked block)',
@@ -1204,7 +1204,7 @@ describe("Baal contract", function () {
       );
     });
 
-    it("permission = 3 - admin + manager actions succeed", async function () {
+    it.only("permission = 3 - admin + manager actions succeed", async function () {
       // admin - success
       await s3Baal.setAdminConfig(true, true);
       expect(await s3Baal.sharesPaused()).to.equal(true);
@@ -1840,7 +1840,7 @@ describe("Baal contract", function () {
       expect(delegate).to.equal(shaman.address);
     });
 
-    it("require fails - shares paused", async function () {
+    it.only("require fails - shares paused", async function () {
       await shamanBaal.setAdminConfig(true, false); // pause shares
       await expect(
         sharesToken.transfer(shaman.address, deploymentConfig.SPONSOR_THRESHOLD)
@@ -2006,7 +2006,7 @@ describe("Baal contract", function () {
       expect(shamanCP1.fromTimeStamp).to.equal(0); // checkpoint DNE
     });
 
-    it("require fails - shares paused", async function () {
+    it.only("require fails - shares paused", async function () {
       await shamanBaal.setAdminConfig(true, false); // pause shares
       await shamanSharesToken.approve(
         summoner.address,
@@ -2070,7 +2070,7 @@ describe("Baal contract", function () {
       expect(shamanVotes).to.equal(0);
     });
 
-    it("require fails - loot paused", async function () {
+    it.only("require fails - loot paused", async function () {
       await shamanBaal.setAdminConfig(false, true); // pause loot
       await expect(lootToken.transfer(shaman.address, 1)).to.be.revertedWith(
         revertMessages.lootTransferPaused
@@ -2098,7 +2098,7 @@ describe("Baal contract", function () {
       expect(shamanVotes).to.equal(0);
     });
 
-    it("require fails - loot paused", async function () {
+    it.only("require fails - loot paused", async function () {
       await shamanBaal.setAdminConfig(false, true); // pause loot
       await lootToken.approve(shaman.address, 500);
       await expect(
