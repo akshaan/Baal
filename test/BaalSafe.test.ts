@@ -309,6 +309,7 @@ describe("Baal contract", function () {
   let weth2: TestERC20;
   let applicantWeth: TestERC20;
   let multisend: MultiSend;
+  let forwarder: string;
 
   let GnosisSafe: ContractFactory;
   let gnosisSafeSingleton: GnosisSafe;
@@ -391,6 +392,7 @@ describe("Baal contract", function () {
     poster = (await Poster.deploy()) as Poster;
     const network = await ethers.provider.getNetwork();
     chainId = network.chainId;
+    forwarder = "0x0000000000000000000000000000000000002211";
   });
 
   beforeEach(async function () {
@@ -446,7 +448,7 @@ describe("Baal contract", function () {
       [[shaman.address], [7]],
       [[summoner.address], [shares]],
       [[summoner.address], [loot]],
-      zeroAddress,
+      forwarder,
     );
 
     const tx = await baalSummoner.summonBaalAndSafe(
@@ -546,6 +548,9 @@ describe("Baal contract", function () {
 
       const avatar = await baal.avatar();
       const target = await baal.target();
+
+      const trustedForwarder = await baal.trustedForwarder()
+      expect(trustedForwarder).to.equal(forwarder);
     });
 
     // it('stuff', function () {
@@ -814,6 +819,11 @@ describe("Baal contract", function () {
       await expect(
         shamanBaal.burnLoot([summoner.address], [501])
       ).to.be.revertedWith(revertMessages.burnLootInsufficientShares);
+    });
+
+    it("set trusted forwarder", async function () {
+      await shamanBaal.setTrustedForwarder("0x0000000000000000000000000000000000000420");
+      expect(await baal.trustedForwarder()).to.equal("0x0000000000000000000000000000000000000420")
     });
 
     it("have shaman mint and burn _delegated_ shares", async function () {
@@ -1139,6 +1149,9 @@ describe("Baal contract", function () {
       await expect(shamanBaal.cancelProposal(2)).to.be.revertedWith(
         revertMessages.cancelProposalNotCancellable
       );
+      await expect(shamanBaal.setTrustedForwarder(forwarder)).to.be.revertedWith(
+        revertMessages.baalOrGovernor
+      );
     });
 
     it("permission = 1 - admin actions succeed", async function () {
@@ -1163,6 +1176,9 @@ describe("Baal contract", function () {
 
       // governor - fail
       expect(s1Baal.setGovernanceConfig(governanceConfig)).to.be.revertedWith(
+        revertMessages.baalOrGovernor
+      );
+      expect(shamanBaal.setTrustedForwarder(forwarder)).to.be.revertedWith(
         revertMessages.baalOrGovernor
       );
 
@@ -1199,6 +1215,9 @@ describe("Baal contract", function () {
       expect(s2Baal.setGovernanceConfig(governanceConfig)).to.be.revertedWith(
         revertMessages.baalOrGovernor
       );
+      await expect(s2Baal.setTrustedForwarder(forwarder)).to.be.revertedWith(
+        revertMessages.baalOrGovernor
+      );
 
       await baal.submitProposal(
         proposal.data,
@@ -1231,6 +1250,9 @@ describe("Baal contract", function () {
 
       // governor - fail
       expect(s3Baal.setGovernanceConfig(governanceConfig)).to.be.revertedWith(
+        revertMessages.baalOrGovernor
+      );
+      expect(s3Baal.setTrustedForwarder(forwarder)).to.be.revertedWith(
         revertMessages.baalOrGovernor
       );
 
@@ -1287,6 +1309,9 @@ describe("Baal contract", function () {
       await s4Baal.cancelProposal(2);
       const state = await baal.state(2);
       expect(state).to.equal(STATES.CANCELLED);
+
+      await s4Baal.setTrustedForwarder(forwarder);
+      expect(await s4Baal.trustedForwarder()).to.equal(forwarder);
     });
 
     it("permission = 5 - admin + governor actions succeed", async function () {
@@ -1331,6 +1356,9 @@ describe("Baal contract", function () {
       await s5Baal.cancelProposal(2);
       const state = await baal.state(2);
       expect(state).to.equal(STATES.CANCELLED);
+
+      await s5Baal.setTrustedForwarder(forwarder);
+      expect(await s5Baal.trustedForwarder()).to.equal(forwarder);
     });
 
     it("permission = 6 - manager + governor actions succeed", async function () {
@@ -1373,6 +1401,9 @@ describe("Baal contract", function () {
       await s6Baal.cancelProposal(2);
       const state = await baal.state(2);
       expect(state).to.equal(STATES.CANCELLED);
+
+      await s6Baal.setTrustedForwarder(forwarder);
+      expect(await s6Baal.trustedForwarder()).to.equal(forwarder);
     });
   });
 
