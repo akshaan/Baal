@@ -60,10 +60,10 @@ const revertMessages = {
   processProposalNotReady: "!ready",
   ragequitUnordered: "!order",
   // unsetGuildTokensLastToken: 'reverted with panic code 0x32 (Array accessed at an out-of-bounds or negative index)',
-  sharesTransferPaused: "Pausable: paused",
+  sharesTransferPaused: "!transferable",
   sharesInsufficientBalance: "ERC20: transfer amount exceeds balance",
   sharesInsufficientApproval: "", // Error: Transaction reverted without a reason string
-  lootTransferPaused: "Pausable: paused",
+  lootTransferPaused: "!transferable",
   lootInsufficientBalance:
     "reverted with reason string 'ERC20: transfer amount exceeds balance'",
   // lootInsufficientApproval: 'reverted with panic code 0x11 (Arithmetic operation underflowed or overflowed outside of an unchecked block)',

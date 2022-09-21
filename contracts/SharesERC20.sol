@@ -70,8 +70,14 @@ contract Shares is BaalVotes, OwnableUpgradeable, PausableUpgradeable, UUPSUpgra
         address from,
         address to,
         uint256 amount
-    ) internal whenNotPaused override(BaalVotes) {
+    ) internal override(BaalVotes) {
         super._beforeTokenTransfer(from, to, amount);
+        require(
+            from == address(0) || /*Minting allowed*/
+                (msg.sender == owner() && to == address(0)) || /*Burning by Baal allowed*/
+                !paused(),
+            "!transferable"
+        );
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
