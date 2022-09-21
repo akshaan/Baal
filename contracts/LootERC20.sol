@@ -9,9 +9,6 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-import "hardhat/console.sol";
-
-
 contract Loot is
     ERC20SnapshotUpgradeable,
     ERC20PermitUpgradeable,
@@ -48,7 +45,6 @@ contract Loot is
     }
 
     function unpause() public onlyOwner {
-        console.log("unpause in token");
         _unpause();
     }
 

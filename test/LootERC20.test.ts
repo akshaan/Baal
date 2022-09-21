@@ -73,9 +73,9 @@ describe('Loot ERC20 contract', async function () {
   })
 
   describe('constructor', async function () {
-    it.only('creates an unusable template', async function () {
+    it('creates an unusable template', async function () {
       const owner = await lootSingleton.owner();
-      console.log("owner from tests", owner);
+      // console.log("owner from tests", owner);
       expect(await lootSingleton.owner()).to.equal(zeroAddress)
     })
 

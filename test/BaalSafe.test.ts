@@ -1204,7 +1204,7 @@ describe("Baal contract", function () {
       );
     });
 
-    it.only("permission = 3 - admin + manager actions succeed", async function () {
+    it("permission = 3 - admin + manager actions succeed", async function () {
       // admin - success
       await s3Baal.setAdminConfig(true, true);
       expect(await s3Baal.sharesPaused()).to.equal(true);
@@ -1840,7 +1840,7 @@ describe("Baal contract", function () {
       expect(delegate).to.equal(shaman.address);
     });
 
-    it.only("require fails - shares paused", async function () {
+    it("require fails - shares paused", async function () {
       await shamanBaal.setAdminConfig(true, false); // pause shares
       await expect(
         sharesToken.transfer(shaman.address, deploymentConfig.SPONSOR_THRESHOLD)
@@ -2006,7 +2006,7 @@ describe("Baal contract", function () {
       expect(shamanCP1.fromTimeStamp).to.equal(0); // checkpoint DNE
     });
 
-    it.only("require fails - shares paused", async function () {
+    it("require fails - shares paused", async function () {
       await shamanBaal.setAdminConfig(true, false); // pause shares
       await shamanSharesToken.approve(
         summoner.address,
@@ -2070,7 +2070,7 @@ describe("Baal contract", function () {
       expect(shamanVotes).to.equal(0);
     });
 
-    it.only("require fails - loot paused", async function () {
+    it("require fails - loot paused", async function () {
       await shamanBaal.setAdminConfig(false, true); // pause loot
       await expect(lootToken.transfer(shaman.address, 1)).to.be.revertedWith(
         revertMessages.lootTransferPaused
@@ -2098,7 +2098,7 @@ describe("Baal contract", function () {
       expect(shamanVotes).to.equal(0);
     });
 
-    it.only("require fails - loot paused", async function () {
+    it("require fails - loot paused", async function () {
       await shamanBaal.setAdminConfig(false, true); // pause loot
       await lootToken.approve(shaman.address, 500);
       await expect(

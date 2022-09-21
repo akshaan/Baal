@@ -19,8 +19,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./interfaces/IBaalToken.sol";
 
-import "hardhat/console.sol";
-
 /// @title Baal ';_;'.
 /// @notice Flexible guild contract inspired by Moloch DAO framework.
 contract Baal is Module, EIP712, ReentrancyGuard {
@@ -728,11 +726,9 @@ contract Baal is Module, EIP712, ReentrancyGuard {
             sharesToken.unpause();
         }
         if(pauseLoot && !lootToken.paused()){
-            console.log("pause loot");
             lootToken.pause();
         } 
         if(!pauseLoot && lootToken.paused()){
-            console.log("unpause loot");
             lootToken.unpause();
         }
 
