@@ -707,7 +707,7 @@ contract Baal is Module, EIP712, ReentrancyGuard {
     // ****************
     // SHAMAN FUNCTIONS
     // ****************
-    /// @notice Baal-or-admin-only function to set admin config (pause/unpause shares/loot)
+    /// @notice Baal-or-admin-only function to set admin config (pause/unpause shares/loot) and call function on token 
     /// @param pauseShares Turn share transfers on or off
     /// @param pauseLoot Turn loot transfers on or off
     function setAdminConfig(bool pauseShares, bool pauseLoot)

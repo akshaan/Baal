@@ -35,10 +35,12 @@ contract Shares is BaalVotes, OwnableUpgradeable, PausableUpgradeable, UUPSUpgra
 
     }
 
+    /// @notice Baal-only function to pause shares.
     function pause() public onlyOwner {
         _pause();
     }
 
+    /// @notice Baal-only function to unpause shares.
     function unpause() public onlyOwner {
         _unpause();
     }
@@ -79,6 +81,6 @@ contract Shares is BaalVotes, OwnableUpgradeable, PausableUpgradeable, UUPSUpgra
             "!transferable"
         );
     }
-
+.
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

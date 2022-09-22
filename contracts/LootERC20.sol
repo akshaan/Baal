@@ -39,10 +39,12 @@ contract Loot is
         _snapshot();
     }
 
+    /// @notice Baal-only function to pause shares.
     function pause() public onlyOwner {
         _pause();
     }
 
+    /// @notice Baal-only function to pause shares.
     function unpause() public onlyOwner {
         _unpause();
     }
