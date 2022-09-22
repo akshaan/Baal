@@ -44,9 +44,6 @@ function etherscan() {
 
 const config: HardhatUserConfig = {
   networks: {
-    hardhat: {
-      allowUnlimitedContractSize: true
-    },
     localhost: {
       url: "http://localhost:8545",
       /*
