@@ -81,6 +81,6 @@ contract Shares is BaalVotes, OwnableUpgradeable, PausableUpgradeable, UUPSUpgra
             "!transferable"
         );
     }
-.
+
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }
