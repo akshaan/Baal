@@ -242,8 +242,6 @@ contract BaalSummoner is ModuleProxyFactory {
             address(_baal)
         );
         bytes memory _initializer = abi.encode(
-            _name,
-            _symbol,
             _lootToken,
             _sharesToken,
             gnosisMultisendLibrary,
@@ -294,8 +292,6 @@ contract BaalSummoner is ModuleProxyFactory {
         );
 
         bytes memory _initializer = abi.encode(
-            _name,
-            _symbol,
             _lootToken,
             _sharesToken,
             gnosisMultisendLibrary,

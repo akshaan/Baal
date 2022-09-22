@@ -4,6 +4,8 @@ pragma solidity 0.8.7;
 interface IBaalToken {
     function name() external view returns (string memory);
 
+    function symbol() external view returns (string memory);
+
     function setUp(string memory _name, string memory _symbol) external;
 
     function mint(address recipient, uint256 amount) external;

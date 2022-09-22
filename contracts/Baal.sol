@@ -233,8 +233,6 @@ contract Baal is Module, EIP712, ReentrancyGuard {
         nonReentrant
     {
         (
-            string memory _name, /*_name Name for erc20 `shares` accounting*/
-            string memory _symbol, /*_symbol Symbol for erc20 `shares` accounting*/
             address _lootToken, /*loot ERC20 token*/
             address _sharesToken, /*shares ERC20 token*/
             address _multisendLibrary, /*address of multisend library*/
@@ -242,7 +240,7 @@ contract Baal is Module, EIP712, ReentrancyGuard {
             bytes memory _initializationMultisendData /*here you call BaalOnly functions to set up initial shares, loot, shamans, periods, etc.*/
         ) = abi.decode(
                 _initializationParams,
-                (string, string, address, address, address, address, bytes)
+                (address, address, address, address, bytes)
             );
 
         __Ownable_init();
@@ -282,8 +280,8 @@ contract Baal is Module, EIP712, ReentrancyGuard {
             quorumPercent,
             sponsorThreshold,
             minRetentionPercent,
-            _name,
-            _symbol,
+            sharesToken.name(),
+            sharesToken.symbol(),
             totalShares(),
             totalLoot()
         );
