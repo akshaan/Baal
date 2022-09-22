@@ -198,9 +198,6 @@ const getBaalParams = async function (
     "executeAsBaal",
     [poster.address, 0, postMetaData]
   ); 
-  const setTrustedForwarder = await baal.interface.encodeFunctionData(
-    "setTrustedForwarder", [trustedForwarder]
-  );
 
   const initalizationActions = [
     setAdminConfig,
@@ -209,7 +206,6 @@ const getBaalParams = async function (
     mintLoot,
     mintShares,
     posterFromBaal,
-    setTrustedForwarder,
   ];
 
   // const initalizationActionsMulti = encodeMultiAction(
@@ -221,14 +217,14 @@ const getBaalParams = async function (
   // )
   return {
     initParams: abiCoder.encode(
-      ["string", "string"],
+      ["string", "string", "address"],
       [
         config.TOKEN_NAME,
         config.TOKEN_SYMBOL,
+        trustedForwarder
       ]
     ),
     initalizationActions,
-
   };
 };
 
@@ -822,8 +818,9 @@ describe("Baal contract", function () {
     });
 
     it("set trusted forwarder", async function () {
-      await shamanBaal.setTrustedForwarder("0x0000000000000000000000000000000000000420");
-      expect(await baal.trustedForwarder()).to.equal("0x0000000000000000000000000000000000000420")
+      const newForwarderAddress = "0x0000000000000000000000000000000000000420";
+      await shamanBaal.setTrustedForwarder(newForwarderAddress);
+      expect(await baal.trustedForwarder()).to.equal(newForwarderAddress);
     });
 
     it("have shaman mint and burn _delegated_ shares", async function () {
@@ -1310,8 +1307,9 @@ describe("Baal contract", function () {
       const state = await baal.state(2);
       expect(state).to.equal(STATES.CANCELLED);
 
-      await s4Baal.setTrustedForwarder(forwarder);
-      expect(await s4Baal.trustedForwarder()).to.equal(forwarder);
+      const newForwarderAddress = "0x0000000000000000000000000000000000000420";
+      await s4Baal.setTrustedForwarder(newForwarderAddress);
+      expect(await s4Baal.trustedForwarder()).to.equal(newForwarderAddress);
     });
 
     it("permission = 5 - admin + governor actions succeed", async function () {
@@ -1357,8 +1355,9 @@ describe("Baal contract", function () {
       const state = await baal.state(2);
       expect(state).to.equal(STATES.CANCELLED);
 
-      await s5Baal.setTrustedForwarder(forwarder);
-      expect(await s5Baal.trustedForwarder()).to.equal(forwarder);
+      const newForwarderAddress = "0x0000000000000000000000000000000000000420";
+      await s5Baal.setTrustedForwarder(newForwarderAddress);
+      expect(await s5Baal.trustedForwarder()).to.equal(newForwarderAddress);
     });
 
     it("permission = 6 - manager + governor actions succeed", async function () {
@@ -1402,8 +1401,9 @@ describe("Baal contract", function () {
       const state = await baal.state(2);
       expect(state).to.equal(STATES.CANCELLED);
 
-      await s6Baal.setTrustedForwarder(forwarder);
-      expect(await s6Baal.trustedForwarder()).to.equal(forwarder);
+      const newForwarderAddress = "0x0000000000000000000000000000000000000420";
+      await s6Baal.setTrustedForwarder(newForwarderAddress);
+      expect(await s6Baal.trustedForwarder()).to.equal(newForwarderAddress);
     });
   });
 
@@ -3700,7 +3700,6 @@ const getBaalParamsWithAvatar = async function (
   shamans: [string[], number[]],
   shares: [string[], number[]],
   loots: [string[], number[]],
-  trustedForwarder: string,
   safeAddr?: string,
 ) {
   const governanceConfig = abiCoder.encode(
@@ -3742,9 +3741,6 @@ const getBaalParamsWithAvatar = async function (
     "executeAsBaal",
     [poster.address, 0, postMetaData]
   );
-  const setTrustedForwarder = await baal.interface.encodeFunctionData(
-    "setTrustedForwarder", [trustedForwarder]
-  );
 
   const initalizationActions = [
     setAdminConfig,
@@ -3753,7 +3749,6 @@ const getBaalParamsWithAvatar = async function (
     mintLoot,
     mintShares,
     posterFromBaal,
-    setTrustedForwarder,
   ];
 
   // const initalizationActionsMulti = encodeMultiAction(
@@ -3773,7 +3768,6 @@ const getBaalParamsWithAvatar = async function (
       ]
     ),
     initalizationActions,
-
   };
 };
 
@@ -3892,7 +3886,6 @@ describe("Baal contract - summon baal with current safe", function () {
           [[shaman.address], [7]],
           [[summoner.address], [shares]],
           [[summoner.address], [loot]],
-          zeroAddress,
           avatar.address,
         );
 
