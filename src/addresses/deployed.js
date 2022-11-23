@@ -1,4 +1,4 @@
-[
+exports.addresses = [
   {
     version: "1.0.0",
     networks: ["mainnet", "gnosischain", "goerli"],
