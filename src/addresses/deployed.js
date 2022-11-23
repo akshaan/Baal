@@ -1,4 +1,4 @@
-exports.addresses = [
+exports.deployments = [
   {
     version: "1.0.0",
     networks: ["mainnet", "gnosischain", "goerli"],
